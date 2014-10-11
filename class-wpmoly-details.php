@@ -79,7 +79,7 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 			add_filter( 'wpmoly_filter_detail_status', array( $this, 'add_movie_status' ), 10, 1 );
 
 			// Create a new detail
-			add_filter( 'wpmoly_filter_details', array( $this, 'create_detail' ), 10, 1 );
+			add_filter( 'wpmoly_pre_filter_details', array( $this, 'create_detail' ), 10, 1 );
 
 			// Create a new Metabox tab
 			add_filter( 'wpmoly_filter_metabox_panels', array( $this, 'add_metabox_panel' ), 10, 1 );

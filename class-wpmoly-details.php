@@ -77,6 +77,12 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 
 			// Add a new status
 			add_filter( 'wpmoly_filter_detail_status', array( $this, 'add_movie_status' ), 10, 1 );
+
+			// Create a new detail
+			add_filter( 'wpmoly_filter_details', array( $this, 'create_detail' ), 10, 1 );
+
+			// Create a new Metabox tab
+			add_filter( 'wpmoly_filter_metabox_panels', array( $this, 'add_metabox_panel' ), 10, 1 );
 		}
 
 		/** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -226,19 +232,100 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 		/**
-		 * Make sure the plugin is load after WPMovieLibrary and not
-		 * before, which would result in errors and missing files.
+		 * Add a new movie status
 		 *
 		 * @since    1.0
+		 * 
+		 * @param    array    Exisiting statuses
+		 * 
+		 * @return   array    Updated statuses
 		 */
 		public function add_movie_status( $statuses ) {
 
 			$new_status = array( 'rented' => __( 'Rented', 'wpmovielibrary-details' ) );
 
 			$statuses = array_merge( $statuses, $new_status );
-			//print_r( $statuses );
 
 			return $statuses;
+		}
+
+		/**
+		 * Create a new movie detail
+		 *
+		 * @since    1.0
+		 * 
+		 * @param    array    Exisiting details
+		 * 
+		 * @return   array    Updated details
+		 */
+		public function create_detail( $details ) {
+
+			$new_details = array(
+				'movie_audio' => array(
+					'id'       => 'wpmoly-movie-audio',
+					'name'     => 'wpmoly_details[movie_audio]',
+					'type'     => 'select',
+					'title'    => __( 'Movie Format', 'wpmovielibrary-details' ),
+					'desc'     => __( 'Select an audio format for this movie', 'wpmovielibrary-details' ),
+					'icon'     => 'dashicons dashicons-megaphone',
+					'options'  => array(
+						'mono'   => __( 'Mono', 'wpmovielibrary-details' ),
+						'stereo' => __( 'Stéréo', 'wpmovielibrary-details' ),
+						'pcm'    => __( 'PCM', 'wpmovielibrary-details' ),
+						'dbthd'  => __( 'DOLBY DIGITAL TrueHD (DD TrueHD)', 'wpmovielibrary-details' ),
+						'dbs'    => __( 'DOLBY Surround', 'wpmovielibrary-details' )
+					),
+					'default'  => 'stereo'
+				)
+			);
+
+			$details = array_merge( $details, $new_details );
+
+			return $details;
+		}
+
+		/**
+		 * Create a new Metabox Panel
+		 *
+		 * @since    1.0
+		 * 
+		 * @param    array    Exisiting panels
+		 * 
+		 * @return   array    Updated panels
+		 */
+		public function add_metabox_panel( $panels ) {
+
+			$new_panels = array(
+				'images' => array(
+					'title'    => __( 'Trailer', 'wpmovielibrary-details' ),
+					'icon'     => 'dashicons dashicons-video-alt3',
+					'callback' => array( $this, 'render_trailer_panel' )
+				)
+			);
+
+			$panels = array_merge( $panels, $new_panels );
+
+			return $panels;
+		}
+
+		/**
+		 * Render Panel content
+		 *
+		 * @since    1.0
+		 */
+		public function render_trailer_panel() {
+
+			ob_start();
+?>
+		<div id="wpmoly-images" class="wpmoly-images">
+			<?php _e( 'My new trailer panel!', 'wpmovielibrary-details' ) ?>
+		</div>
+
+<?php
+			$content = ob_get_contents();
+			ob_end_clean();
+
+			return $content;
 		}
 
 	}

@@ -296,7 +296,7 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 		public function add_metabox_panel( $panels ) {
 
 			$new_panels = array(
-				'images' => array(
+				'trailer' => array(
 					'title'    => __( 'Trailer', 'wpmovielibrary-details' ),
 					'icon'     => 'dashicons dashicons-video-alt3',
 					'callback' => array( $this, 'render_trailer_panel' )

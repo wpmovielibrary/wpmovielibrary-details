@@ -20,6 +20,14 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 	class WPMovieLibrary_Details extends WPMOLY_Details_Module {
 
 		/**
+		 * Settings for new detail
+		 * 
+		 * @since     1.0
+		 * @var       array
+		 */
+		protected $detail = array();
+
+		/**
 		 * Initialize the plugin by setting localization and loading public scripts
 		 * and styles.
 		 *
@@ -44,24 +52,23 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 			}
 
 			$this->register_hook_callbacks();
-		}
 
-		/**
-		 * Make sure WPMovieLibrary is active and compatible.
-		 *
-		 * @since    1.0
-		 * 
-		 * @return   boolean    Requirements met or not?
-		 */
-		private function wpmoly_details_requirements_error() {
-
-			$wpml_active  = is_wpmoly_active();
-			$wpml_version = ( $wpml_active && version_compare( WPML_VERSION, WPMLTR_REQUIRED_WPML_VERSION, '>=' ) );
-
-			if ( ! $wpml_active || ! $wpml_version )
-				return false;
-
-			return true;
+			$this->detail = array(
+				'id'       => 'wpmoly-movie-audio',
+				'name'     => 'wpmoly_details[audio]',
+				'type'     => 'select',
+				'title'    => __( 'Audio Format', 'wpmovielibrary-details' ),
+				'desc'     => __( 'Select an audio format for this movie', 'wpmovielibrary-details' ),
+				'icon'     => 'dashicons dashicons-megaphone',
+				'options'  => array(
+					'mono'   => __( 'Mono', 'wpmovielibrary-details' ),
+					'stereo' => __( 'Stéréo', 'wpmovielibrary-details' ),
+					'pcm'    => __( 'PCM', 'wpmovielibrary-details' ),
+					'dbthd'  => __( 'DOLBY DIGITAL TrueHD (DD TrueHD)', 'wpmovielibrary-details' ),
+					'dbs'    => __( 'DOLBY Surround', 'wpmovielibrary-details' )
+				),
+				'default'  => 'stereo'
+			);
 		}
 
 		/**
@@ -81,6 +88,9 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 			// Create a new detail
 			add_filter( 'wpmoly_pre_filter_details', array( $this, 'create_detail' ), 10, 1 );
 
+			// Add new detail to the settings panel
+			add_filter( 'redux/options/wpmoly_settings/field/wpmoly-sort-details/register', array( $this, 'detail_setting' ), 10, 1 );
+
 			// Create a new Metabox tab
 			add_filter( 'wpmoly_filter_metabox_panels', array( $this, 'add_metabox_panel' ), 10, 1 );
 		}
@@ -90,6 +100,24 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 		 *                     Plugin  Activate/Deactivate
 		 * 
 		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+		/**
+		 * Make sure WPMovieLibrary is active and compatible.
+		 *
+		 * @since    1.0
+		 * 
+		 * @return   boolean    Requirements met or not?
+		 */
+		private function wpmoly_details_requirements_error() {
+
+			$wpml_active  = is_wpmoly_active();
+			$wpml_version = ( $wpml_active && version_compare( WPML_VERSION, WPMLTR_REQUIRED_WPML_VERSION, '>=' ) );
+
+			if ( ! $wpml_active || ! $wpml_version )
+				return false;
+
+			return true;
+		}
 
 		/**
 		 * Fired when the plugin is activated.
@@ -260,28 +288,25 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 		 */
 		public function create_detail( $details ) {
 
-			$new_details = array(
-				'movie_audio' => array(
-					'id'       => 'wpmoly-movie-audio',
-					'name'     => 'wpmoly_details[movie_audio]',
-					'type'     => 'select',
-					'title'    => __( 'Movie Format', 'wpmovielibrary-details' ),
-					'desc'     => __( 'Select an audio format for this movie', 'wpmovielibrary-details' ),
-					'icon'     => 'dashicons dashicons-megaphone',
-					'options'  => array(
-						'mono'   => __( 'Mono', 'wpmovielibrary-details' ),
-						'stereo' => __( 'Stéréo', 'wpmovielibrary-details' ),
-						'pcm'    => __( 'PCM', 'wpmovielibrary-details' ),
-						'dbthd'  => __( 'DOLBY DIGITAL TrueHD (DD TrueHD)', 'wpmovielibrary-details' ),
-						'dbs'    => __( 'DOLBY Surround', 'wpmovielibrary-details' )
-					),
-					'default'  => 'stereo'
-				)
-			);
-
-			$details = array_merge( $details, $new_details );
+			$details = array_merge( $details, array( 'audio' => $this->detail ) );
 
 			return $details;
+		}
+
+		/**
+		 * Add new movie detail to the Settings panel
+		 *
+		 * @since    1.0
+		 * 
+		 * @param    array    Exisiting detail field
+		 * 
+		 * @return   array    Updated detail field
+		 */
+		public function detail_setting( $field ) {
+
+			$field['options']['available'] = array_merge( $field['options']['available'], array( 'audio' => $this->detail['title'] ) );
+
+			return $field;
 		}
 
 		/**

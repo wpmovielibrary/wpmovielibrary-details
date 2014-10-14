@@ -91,6 +91,9 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 			// Add new detail to the settings panel
 			add_filter( 'redux/options/wpmoly_settings/field/wpmoly-sort-details/register', array( $this, 'detail_setting' ), 10, 1 );
 
+			// Add a formatting filter
+			add_filter( 'wpmoly_format_movie_audio', array( $this, 'format_detail' ), 10, 1 );
+
 			// Create a new Metabox tab
 			add_filter( 'wpmoly_filter_metabox_panels', array( $this, 'add_metabox_panel' ), 10, 1 );
 		}
@@ -307,6 +310,40 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 			$field['options']['available'] = array_merge( $field['options']['available'], array( 'audio' => $this->detail['title'] ) );
 
 			return $field;
+		}
+
+		/**
+		 * Apply some formatting to the new detail rendering
+		 * 
+		 * This method should be very similar to the ones present in the
+		 * plugin utils class.
+		 *
+		 * @since    1.0
+		 * 
+		 * @param    array    Exisiting detail field
+		 * 
+		 * @return   array    Updated detail field
+		 */
+		public function format_detail( $data, $format = 'html' ) {
+
+			$format = ( 'raw' == $format ? 'raw' : 'html' );
+
+			if ( '' == $data )
+				return $data;
+
+			if ( wpmoly_o( 'details-icons' ) && 'html' == $format  ) {
+				$view = 'shortcodes/detail-icon-title.php';
+			} else if ( 'html' == $format ) {
+				$view = 'shortcodes/detail.php';
+			}
+
+			$title = '';
+			if ( isset( $this->detail['options'][ $data ] ) )
+				$title = $this->detail['options'][ $data ];
+			$data = 'audio';
+			$data = WPMovieLibrary::render_template( $view, array( 'detail' => 'audio', 'data' => $data, 'title' => $title ), $require = 'always' );
+
+			return $data;
 		}
 
 		/**

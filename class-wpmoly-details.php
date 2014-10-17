@@ -67,7 +67,8 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 					'dbthd'  => __( 'DOLBY DIGITAL TrueHD (DD TrueHD)', 'wpmovielibrary-details' ),
 					'dbs'    => __( 'DOLBY Surround', 'wpmovielibrary-details' )
 				),
-				'default'  => 'stereo'
+				'default'  => 'stereo',
+				'rewrite'  => array( 'audio' => __( 'audio', 'wpmovielibrary-details' ) )
 			);
 		}
 

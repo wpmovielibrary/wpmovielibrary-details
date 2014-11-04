@@ -68,6 +68,7 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 					'dbs'    => __( 'DOLBY Surround', 'wpmovielibrary-details' )
 				),
 				'default'  => 'stereo',
+				'multi'    => true,
 				'rewrite'  => array( 'audio' => __( 'audio', 'wpmovielibrary-details' ) )
 			);
 		}
@@ -85,6 +86,7 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 
 			// Add a new status
 			add_filter( 'wpmoly_filter_detail_status', array( $this, 'add_movie_status' ), 10, 1 );
+			add_filter( 'wpmoly_filter_detail_media', array( $this, 'add_movie_media' ), 10, 1 );
 
 			// Create a new detail
 			add_filter( 'wpmoly_pre_filter_details', array( $this, 'create_detail' ), 10, 1 );
@@ -96,7 +98,7 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 			add_filter( 'wpmoly_format_movie_audio', array( $this, 'format_detail' ), 10, 1 );
 
 			// Create a new Metabox tab
-			add_filter( 'wpmoly_filter_metabox_panels', array( $this, 'add_metabox_panel' ), 10, 1 );
+			//add_filter( 'wpmoly_filter_metabox_panels', array( $this, 'add_metabox_panel' ), 10, 1 );
 		}
 
 		/** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -282,6 +284,31 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 		}
 
 		/**
+		 * Add a new movie media
+		 *
+		 * @since    1.0
+		 * 
+		 * @param    array    Exisiting media
+		 * 
+		 * @return   array    Updated media
+		 */
+		public function add_movie_media( $media ) {
+
+			$new_media = array( 'mkv' => __( 'MKV', 'wpmovielibrary-details' ) );
+
+			$offset = array_search( 'divx', array_keys( $media ) ) + 1;
+			$media  = array_merge(
+				array_slice( $media, 0, $offset ),
+				$new_media,
+				array_slice( $media, $offset, null )
+			);
+
+			$media = array_merge( $media, $new_media );
+
+			return $media;
+		}
+
+		/**
 		 * Create a new movie detail
 		 *
 		 * @since    1.0
@@ -321,7 +348,8 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 		 *
 		 * @since    1.0
 		 * 
-		 * @param    array    Exisiting detail field
+		 * @param    array    $data Exisiting detail field
+		 * @param    array    $format data format, raw or HTML
 		 * 
 		 * @return   array    Updated detail field
 		 */
@@ -338,11 +366,16 @@ if ( ! class_exists( 'WPMovieLibrary_Trailers' ) ) :
 				$view = 'shortcodes/detail.php';
 			}
 
-			$title = '';
-			if ( isset( $this->detail['options'][ $data ] ) )
-				$title = $this->detail['options'][ $data ];
-			$data = 'audio';
-			$data = WPMovieLibrary::render_template( $view, array( 'detail' => 'audio', 'data' => $data, 'title' => $title ), $require = 'always' );
+			$title = array();
+
+			if ( ! is_array( $data ) )
+				$data = array( $data );
+
+			foreach ( $data as $d )
+				if ( isset( $this->detail['options'][ $d ] ) )
+					$title[] = $this->detail['options'][ $d ];
+
+			$data = WPMovieLibrary::render_template( $view, array( 'detail' => 'audio', 'data' => 'audio', 'title' => implode( ', ', $title ) ), $require = 'always' );
 
 			return $data;
 		}
